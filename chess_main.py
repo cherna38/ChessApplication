@@ -15,6 +15,9 @@ class ChessGame(QMainWindow):
         self.create_board()
         self.create_pieces()
 
+        self.first_square_selection: ChessSquare = None
+        self.second_square_selection: ChessSquare = None
+
     def launch():
         pass
 
@@ -24,23 +27,120 @@ class ChessGame(QMainWindow):
         #     for col in range(len(arr[1])):
         pass
 
+    def set_up_pawns(self, row, team):
+        layout = self.get_board()
+
+        for col in range(CHESS_BOARD_LENGTH):
+            w_square = ChessSquare(row, col, Pawn(team))
+            w_square.BTN_PUSHED.connect(self.on_square_clicked)
+            layout.addWidget(
+                w_square
+            )
+
+    def set_up_elite_pieces(self, row, team):
+        layout = self.get_board()
+
+        for col, piece_class in enumerate(CHESS_PIECE_ORDER):
+            w_square = ChessSquare(row, col, piece_class(team))
+            w_square.BTN_PUSHED.connect(self.on_square_clicked)
+            layout.addWidget(
+                w_square,
+                row,
+                col,
+            )
+
+    def set_up_empty_squares(self):
+        layout = self.get_board()
+
+        for row in range(2, 6):
+            for col in range(CHESS_BOARD_WIDTH):
+                w_square = ChessSquare(row, col)
+                w_square.BTN_PUSHED.connect(self.on_square_clicked)
+                layout.addWidget(
+                    w_square,
+                    row,
+                    col,
+                )
+
     def set_up_layout(self):
         layout = self.get_board()
 
-        rows, cols = (8, 8)
-        arr = [[0]*cols]*rows
+        # TODO: set up functionality for random team
+        # set up black pieces
+        self.set_up_elite_pieces(ELITE_PIECES[0], ChessPiece.TEAM_BLACK)
+        self.set_up_pawns(PAWN_ROW[0], ChessPiece.TEAM_BLACK)
 
-        for row in range(len(arr[0])):
-            for col in range(len(arr[1])):
-                w = ChessSquare(row, col)
-                if (row in PAWN_ROW):
-                    w.set_chess_piece(Pawn(ChessPiece.TEAM_BLACK))
+        self.set_up_empty_squares()
 
-                w.BTN_PUSHED.connect(self.on_square_clicked)
-                layout.addWidget(w, row, col)
+        # set up white pieces
+        self.set_up_pawns(PAWN_ROW[1], ChessPiece.TEAM_WHITE)
+        self.set_up_elite_pieces(ELITE_PIECES[1], ChessPiece.TEAM_WHITE)
+
+        layout.setSpacing(0)
+
+        # rows, cols = (8, 8)
+        # arr = [[0]*cols]*rows
+
+        # for row in range(len(arr[0])):
+        #     for col in range(len(arr[1])):
+        #         w = ChessSquare(row, col)
+        #         if (row == PAWN_ROW[0]):
+        #             w.set_chess_piece(Pawn(ChessPiece.TEAM_BLACK))
+
+        #         if (row == ELITE_PIECES[0]):
+        #             for x, i  in enumerate(CHESS_PIECE_ORDER):
+
+        #         if (row == PAWN_ROW[1]):
+        #             w.set_chess_piece(Pawn(ChessPiece.TEAM_WHITE))
+
+        #         if(row == 0 and colo)
+
+        #         w.BTN_PUSHED.connect(self.on_square_clicked)
+        #         layout.addWidget(w, row, col)
+
+    def reset_selected_squares(self):
+        self.first_square_selection = None
+        self.second_square_selection = None
+
+    def get_square_at(self, row, col) -> ChessSquare:
+        lay = self.get_board()
+        layout_item = lay.itemAtPosition(row, col)
+        square = layout_item.widget()
+        return square
 
     def on_square_clicked(self, row, col):
-        pass
+        chess_square = self.get_square_at(row, col)
+        chess_piece = chess_square.get_chess_piece()
+
+        # first selection must have a piece if not return and reset
+        if self.first_square_selection == None:
+            if chess_piece:
+                self.first_square_selection = chess_square
+            else:
+                self.reset_selected_squares()
+            return
+
+        if self.first_square_selection == chess_square:
+            self.reset_selected_squares()
+            return
+
+        if self.second_square_selection == None:
+            self.second_square_selection = chess_square
+            self.move_chess_piece(
+                self.first_square_selection,
+                self.second_square_selection,
+            )
+            # chess_piece.move()
+
+    def move_chess_piece(self, from_square: ChessSquare, to_square: ChessSquare):
+        lay = self.get_board()
+        to_square.set_chess_piece(
+            from_square.get_chess_piece()
+        )
+
+        from_square.set_chess_piece(None)
+
+        self.reset_selected_squares()
 
     def create_board(self):
         self._board = QGridLayout()

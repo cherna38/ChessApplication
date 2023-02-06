@@ -14,18 +14,79 @@ class PieceType(Enum):
     KING = auto()
 
 
+class ChessSquare(QPushButton):
+    BTN_PUSHED = Signal(int, int)
+
+    def __init__(self, row: int, col: int, chess_piece: "ChessPiece" = None):
+        super(ChessSquare, self).__init__()
+        self.setAutoFillBackground(True)
+
+        color = "red"
+        self.square_img = None
+        if chess_piece:
+            color = chess_piece.get_team()
+            self.square_img = chess_piece.get_piece_image()
+
+        palette = self.palette()
+        palette.setColor(QPalette.Window, QColor(color))
+        self.setPalette(palette)
+
+        self.row = row
+        self.col = col
+
+        self.chess_piece: ChessPiece = chess_piece
+
+        self.set_square_image()
+
+        self.setFixedSize(50, 50)
+
+    def get_square_image(self) -> QImage:
+        if self.chess_piece:
+            return self.chess_piece.get_piece_image()
+
+        return None
+
+    def set_square_image(self):
+        img = self.get_square_image()
+        if img:
+            self.setIcon(img)
+        else:
+            self.setIcon(QPixmap())
+
+    def set_chess_piece(self, chess_piece: "ChessPiece"):
+        self.chess_piece = chess_piece
+        self.set_square_image()
+
+    def get_chess_piece(self) -> "ChessPiece":
+        if self.chess_piece:
+            return self.chess_piece
+
+        return None
+
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+        self.BTN_PUSHED.emit(self.row, self.col)
+        return super().mousePressEvent(e)
+
+    def set_position(self, row, col):
+        self.row = row
+        self.col = col
+
+    def get_position(self) -> int | int:
+        return self.row, self.col
+
+
 class ChessPiece():
     TEAM_BLACK = "black"
     TEAM_WHITE = "white"
 
-    def __init__(self, team_color) -> None:  # type: PieceType
+    def __init__(self, team_color) -> None:
         self.team = team_color
         self.type = type
         self.location = None
         self.piece_image = None
         self.piece_image = self.get_piece_image()
 
-    def move(self):
+    def move(self, from_square: ChessSquare, to_square: ChessSquare) -> bool:
         raise NotImplementedError
 
     def eat(self):
@@ -54,6 +115,28 @@ class Pawn(ChessPiece):
         self._name = "pawn"
         super().__init__(team_color)
 
+    def move(self, from_square, to_square):
+        # row, col = from_square.get_position()
+        # to_row, to_col = to_square.get_position()
+        # self.get_team()
+
+        return False
+
+    def eat(self):
+        return super().eat()
+
+    def get_name(self):
+        return self._name
+
+    def get_team(self):
+        return self.team
+
+
+class Rook(ChessPiece):
+    def __init__(self, team_color) -> None:
+        self._name = "rook"
+        super().__init__(team_color)
+
     def move(self):
         return super().move()
 
@@ -67,74 +150,103 @@ class Pawn(ChessPiece):
         return self.team
 
 
-class Rook(ChessPiece):
-    def __init__(self) -> None:
-        super().__init__()
-
-
 class Bishop(ChessPiece):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, team_color) -> None:
+        self._name = "bishop"
+        super().__init__(team_color)
+
+    def move(self):
+        return super().move()
+
+    def eat(self):
+        return super().eat()
+
+    def get_name(self):
+        return self._name
+
+    def get_team(self):
+        return self.team
 
 
 class Knight(ChessPiece):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, team_color) -> None:
+        self._name = "knight"
+        super().__init__(team_color)
+
+    def move(self):
+        return super().move()
+
+    def eat(self):
+        return super().eat()
+
+    def get_name(self):
+        return self._name
+
+    def get_team(self):
+        return self.team
 
 
 class Queen(ChessPiece):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, team_color) -> None:
+        self._name = "queen"
+        super().__init__(team_color)
+
+    def move(self):
+        return super().move()
+
+    def eat(self):
+        return super().eat()
+
+    def get_name(self):
+        return self._name
+
+    def get_team(self):
+        return self.team
 
 
 class King(ChessPiece):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, team_color) -> None:
+        self._name = "king"
+        super().__init__(team_color)
+
+    def move(self):
+        return super().move()
+
+    def eat(self):
+        return super().eat()
+
+    def get_name(self):
+        return self._name
+
+    def get_team(self):
+        return self.team
 
 
-class ChessSquare(QPushButton):
-    BTN_PUSHED = Signal(int, int)
+class NoPiece(ChessPiece):
+    def __init__(self, team_color) -> None:
+        self._name = "none"
+        super().__init__(team_color)
 
-    def __init__(self, row: int, col: int, chess_piece: ChessPiece = None):
-        super(ChessSquare, self).__init__()
-        self.setAutoFillBackground(True)
+    def move(self):
+        return super().move()
 
-        color = "red"
-        self.square_img = None
-        if chess_piece:
-            color = chess_piece.get_team()
-            self.square_img = chess_piece.get_piece_image()
+    def eat(self):
+        return super().eat()
 
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(color))
-        self.setPalette(palette)
+    def get_name(self):
+        return self._name
 
-        self.row = row
-        self.col = col
+    def get_team(self):
+        return self.team
 
-        self.chess_piece: ChessPiece = chess_piece
 
-        self.set_square_image()
-
-    def get_square_image(self) -> QImage:
-        if self.chess_piece:
-            return self.chess_piece.get_piece_image()
-
-        return None
-
-    def set_square_image(self):
-        img = self.get_square_image()
-        if img:
-            self.setIcon(img)
-
-    def set_chess_piece(self, chess_piece: ChessPiece):
-        self.chess_piece = chess_piece
-        self.set_square_image()
-
-    def mousePressEvent(self, e: QMouseEvent) -> None:
-        self.BTN_PUSHED.emit(self.row, self.col)
-        return super().mousePressEvent(e)
-
-    def set_position(self, row, col):
-        self.row = row
-        self.col = col
+CHESS_PIECE_ORDER = [
+    Rook,
+    Knight,
+    Bishop,
+    Queen,
+    King,
+    Bishop,
+    Knight,
+    Rook,
+]

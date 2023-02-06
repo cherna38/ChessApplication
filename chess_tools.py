@@ -2,6 +2,8 @@ from PySide6.QtGui import QImage, QPixmap
 
 PAWN_ROW = [1, 6]
 ELITE_PIECES = [0, 7]
+CHESS_BOARD_LENGTH = 8
+CHESS_BOARD_WIDTH = 8
 
 
 def load_svg(team_color: str, type: str) -> QPixmap:
