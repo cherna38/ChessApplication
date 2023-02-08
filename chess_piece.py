@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from PySide6.QtGui import QPalette, QColor, QMouseEvent, QImage
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QSize
 from chess_tools import *
 
 
@@ -21,7 +21,7 @@ class ChessSquare(QPushButton):
         super(ChessSquare, self).__init__()
         self.setAutoFillBackground(True)
 
-        color = "red"
+        color = "brown"
         self.square_img = None
         if chess_piece:
             color = chess_piece.get_team()
@@ -39,6 +39,8 @@ class ChessSquare(QPushButton):
         self.set_square_image()
 
         self.setFixedSize(50, 50)
+
+        self.setIconSize(QSize(40, 40))
 
     def get_square_image(self) -> QImage:
         if self.chess_piece:

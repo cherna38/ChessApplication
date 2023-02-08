@@ -5,6 +5,14 @@ from chess_piece import *
 import sys
 
 
+class ChessTeam():
+    def __init__(self) -> None:
+        self.team = None
+
+    def set_up_pieces(self):
+        pass
+
+
 class ChessGame(QMainWindow):
     def __init__(self) -> None:
         super(ChessGame, self).__init__()
@@ -76,27 +84,27 @@ class ChessGame(QMainWindow):
         self.set_up_pawns(PAWN_ROW[1], ChessPiece.TEAM_WHITE)
         self.set_up_elite_pieces(ELITE_PIECES[1], ChessPiece.TEAM_WHITE)
 
+        # make squares different colors
+        self.checker_the_board()
+
         layout.setSpacing(0)
 
-        # rows, cols = (8, 8)
-        # arr = [[0]*cols]*rows
+    def checker_the_board(self):
+        '''Set up the look of every square.
+        '''
+        board = self.get_board()
+        for row in range(CHESS_BOARD_LENGTH):
+            for col in range(CHESS_BOARD_WIDTH):
+                square = self.get_square_at(row, col)
+                cor_sum = row + col
 
-        # for row in range(len(arr[0])):
-        #     for col in range(len(arr[1])):
-        #         w = ChessSquare(row, col)
-        #         if (row == PAWN_ROW[0]):
-        #             w.set_chess_piece(Pawn(ChessPiece.TEAM_BLACK))
+                color = "background-color : "
+                if cor_sum % 2 == 0 or cor_sum == 0:
+                    color += "brown"
+                else:
+                    color += "white"
 
-        #         if (row == ELITE_PIECES[0]):
-        #             for x, i  in enumerate(CHESS_PIECE_ORDER):
-
-        #         if (row == PAWN_ROW[1]):
-        #             w.set_chess_piece(Pawn(ChessPiece.TEAM_WHITE))
-
-        #         if(row == 0 and colo)
-
-        #         w.BTN_PUSHED.connect(self.on_square_clicked)
-        #         layout.addWidget(w, row, col)
+                square.setStyleSheet(color)
 
     def reset_selected_squares(self):
         self.first_square_selection = None
