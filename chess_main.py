@@ -5,20 +5,12 @@ from chess_piece import *
 import sys
 
 
-class ChessTeam():
-    def __init__(self) -> None:
-        self.team = None
-
-    def set_up_pieces(self):
-        pass
-
-
 class ChessGame(QMainWindow):
     def __init__(self) -> None:
         super(ChessGame, self).__init__()
         self.setWindowTitle("The Beautiful Game Of Chess")
-        self.black_team = None
-        self.white_team = None
+        self.black_team = ChessTeam(TEAM_BLACK, TOP_OF_BOARD)
+        self.white_team = ChessTeam(TEAM_WHITE, BOTTOM_OF_BOARD)
         self._board = None
         self.create_board()
         self.create_pieces()
@@ -26,8 +18,16 @@ class ChessGame(QMainWindow):
         self.first_square_selection: ChessSquare = None
         self.second_square_selection: ChessSquare = None
 
+        self.current_team: ChessTeam = None
+
     def launch():
         pass
+
+    def get_current_team(self):
+        return self.current_team
+
+    def set_current_team(self, team: ChessTeam):
+        self.current_team = team
 
     def set_up_game_pieces(self, array):
         # array
@@ -45,7 +45,7 @@ class ChessGame(QMainWindow):
                 w_square
             )
 
-    def set_up_elite_pieces(self, row, team):
+    def set_up_elite_pieces(self, row, team: ChessTeam):
         layout = self.get_board()
 
         for col, piece_class in enumerate(CHESS_PIECE_ORDER):
@@ -75,14 +75,14 @@ class ChessGame(QMainWindow):
 
         # TODO: set up functionality for random team
         # set up black pieces
-        self.set_up_elite_pieces(ELITE_PIECES[0], ChessPiece.TEAM_BLACK)
-        self.set_up_pawns(PAWN_ROW[0], ChessPiece.TEAM_BLACK)
+        self.set_up_elite_pieces(ELITE_PIECES[0], self.black_team)
+        self.set_up_pawns(PAWN_ROW[0], self.black_team)
 
         self.set_up_empty_squares()
 
         # set up white pieces
-        self.set_up_pawns(PAWN_ROW[1], ChessPiece.TEAM_WHITE)
-        self.set_up_elite_pieces(ELITE_PIECES[1], ChessPiece.TEAM_WHITE)
+        self.set_up_pawns(PAWN_ROW[1], self.white_team)
+        self.set_up_elite_pieces(ELITE_PIECES[1], self.white_team)
 
         # make squares different colors
         self.checker_the_board()
@@ -134,11 +134,23 @@ class ChessGame(QMainWindow):
 
         if self.second_square_selection == None:
             self.second_square_selection = chess_square
-            self.move_chess_piece(
-                self.first_square_selection,
-                self.second_square_selection,
+            self.player_moved(
+                self.first_square_selection, self.second_square_selection
             )
+            # self.second_square_selection = chess_square
+            # self.move_chess_piece(
+            #     self.first_square_selection,
+            #     self.second_square_selection,
+            # )
             # chess_piece.move()
+
+    def player_moved(self, from_square: ChessSquare, to_square: ChessSquare):
+        chess_piece = from_square.get_chess_piece()
+        if not chess_piece.move(from_square, to_square):
+            self.reset_selected_squares()
+            return
+
+        self.move_chess_piece(from_square, to_square)
 
     def move_chess_piece(self, from_square: ChessSquare, to_square: ChessSquare):
         lay = self.get_board()

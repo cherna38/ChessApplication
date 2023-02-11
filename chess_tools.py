@@ -5,6 +5,12 @@ ELITE_PIECES = [0, 7]
 CHESS_BOARD_LENGTH = 8
 CHESS_BOARD_WIDTH = 8
 
+TEAM_BLACK = "black"
+TEAM_WHITE = "white"
+
+TOP_OF_BOARD = "top"
+BOTTOM_OF_BOARD = "bottom"
+
 
 def load_svg(team_color: str, type: str) -> QPixmap:
     file_name = team_color+"_"+type+".svg"

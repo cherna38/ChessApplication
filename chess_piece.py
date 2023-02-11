@@ -1,6 +1,7 @@
 from enum import Enum, auto
+import operator
 from PySide6.QtGui import QPalette, QColor, QMouseEvent, QImage
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton
+from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import Signal, QSize
 from chess_tools import *
 
@@ -77,16 +78,28 @@ class ChessSquare(QPushButton):
         return self.row, self.col
 
 
-class ChessPiece():
-    TEAM_BLACK = "black"
-    TEAM_WHITE = "white"
-
-    def __init__(self, team_color) -> None:
+class ChessTeam():
+    def __init__(self, team_color, starting_position) -> None:
         self.team = team_color
-        self.type = type
+        self.position = starting_position
+
+    def get_team(self):
+        return self.team
+
+    def get_starting_side(self):
+        return self.position
+
+
+class ChessPiece():
+    def __init__(self, team: ChessTeam) -> None:
+        self.team = team
+        # self.type = type
         self.location = None
         self.piece_image = None
         self.piece_image = self.get_piece_image()
+
+    def get_team(self):
+        return self.team.get_team()
 
     def move(self, from_square: ChessSquare, to_square: ChessSquare) -> bool:
         raise NotImplementedError
@@ -95,9 +108,6 @@ class ChessPiece():
         raise NotImplementedError
 
     def get_name(self):
-        raise NotImplementedError
-
-    def get_team(self):
         raise NotImplementedError
 
     def get_piece_image(self):
@@ -113,14 +123,24 @@ class ChessPiece():
 
 
 class Pawn(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "pawn"
-        super().__init__(team_color)
+        super().__init__(chess_team)
+
+        if self.team.get_starting_side() is TOP_OF_BOARD:
+            self.operation = operator.lt
+        else:
+            self.operation = operator.gt
 
     def move(self, from_square, to_square):
         # row, col = from_square.get_position()
         # to_row, to_col = to_square.get_position()
         # self.get_team()
+        from_pos, col = from_square.get_position()
+        to_pos, col = to_square.get_position()
+
+        if self.operation(from_pos, to_pos) and abs(from_pos-to_pos) == 1:
+            return True
 
         return False
 
@@ -130,14 +150,11 @@ class Pawn(ChessPiece):
     def get_name(self):
         return self._name
 
-    def get_team(self):
-        return self.team
-
 
 class Rook(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "rook"
-        super().__init__(team_color)
+        super().__init__(chess_team)
 
     def move(self):
         return super().move()
@@ -147,15 +164,12 @@ class Rook(ChessPiece):
 
     def get_name(self):
         return self._name
-
-    def get_team(self):
-        return self.team
 
 
 class Bishop(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "bishop"
-        super().__init__(team_color)
+        super().__init__(chess_team)
 
     def move(self):
         return super().move()
@@ -165,15 +179,12 @@ class Bishop(ChessPiece):
 
     def get_name(self):
         return self._name
-
-    def get_team(self):
-        return self.team
 
 
 class Knight(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "knight"
-        super().__init__(team_color)
+        super().__init__(chess_team)
 
     def move(self):
         return super().move()
@@ -183,15 +194,12 @@ class Knight(ChessPiece):
 
     def get_name(self):
         return self._name
-
-    def get_team(self):
-        return self.team
 
 
 class Queen(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "queen"
-        super().__init__(team_color)
+        super().__init__(chess_team)
 
     def move(self):
         return super().move()
@@ -201,15 +209,12 @@ class Queen(ChessPiece):
 
     def get_name(self):
         return self._name
-
-    def get_team(self):
-        return self.team
 
 
 class King(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "king"
-        super().__init__(team_color)
+        super().__init__(chess_team)
 
     def move(self):
         return super().move()
@@ -220,14 +225,11 @@ class King(ChessPiece):
     def get_name(self):
         return self._name
 
-    def get_team(self):
-        return self.team
-
 
 class NoPiece(ChessPiece):
-    def __init__(self, team_color) -> None:
+    def __init__(self, chess_team) -> None:
         self._name = "none"
-        super().__init__(team_color)
+        super().__init__(chess_team)
 
     def move(self):
         return super().move()
