@@ -66,6 +66,11 @@ class ChessSquare(QPushButton):
 
         return None
 
+    def is_empty(self):
+        if self.chess_piece:
+            return False
+        return True
+
     def mousePressEvent(self, e: QMouseEvent) -> None:
         self.BTN_PUSHED.emit(self.row, self.col)
         return super().mousePressEvent(e)
@@ -97,6 +102,7 @@ class ChessPiece():
         self.location = None
         self.piece_image = None
         self.piece_image = self.get_piece_image()
+        self.at_starting_position: bool = True
 
     def get_team(self):
         return self.team.get_team()
@@ -121,9 +127,12 @@ class ChessPiece():
     def is_legal_move(self):
         pass
 
+    def moved_from_starting_position(self):
+        self.at_starting_position = False
+
 
 class Pawn(ChessPiece):
-    def __init__(self, chess_team) -> None:
+    def __init__(self, chess_team: ChessTeam) -> None:
         self._name = "pawn"
         super().__init__(chess_team)
 
@@ -136,10 +145,38 @@ class Pawn(ChessPiece):
         # row, col = from_square.get_position()
         # to_row, to_col = to_square.get_position()
         # self.get_team()
-        from_pos, col = from_square.get_position()
-        to_pos, col = to_square.get_position()
+        from_row, from_col = from_square.get_position()
+        to_row, to_col = to_square.get_position()
+        valid_pawn_move = False
 
-        if self.operation(from_pos, to_pos) and abs(from_pos-to_pos) == 1:
+        # TODO: FIX LOGIC FOR MOVING
+        # COMMON INVALID MOVES
+        if abs(from_col-to_col) > 1:
+            return False
+        if abs(from_row-to_row) > 1:
+            return False
+        if not self.operation(from_row, to_row):
+            return False
+
+        # check vertical pawn move
+        if self.operation(from_row, to_row) and abs(from_row-to_row) == 1:
+
+            # check horizontal move
+            if abs(from_col-to_col) == 1:
+                if to_square.is_empty():
+                    return False
+                # there is a horizontal piece to be eaten
+                else:
+                    # check to make sure not same team
+                    chess_piece = to_square.get_chess_piece()
+                    if chess_piece.get_team() == self.get_team():
+                        return False
+                    else:
+                        return True
+
+            if not to_square.is_empty():
+                return False
+
             return True
 
         return False

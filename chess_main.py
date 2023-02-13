@@ -145,12 +145,41 @@ class ChessGame(QMainWindow):
             # chess_piece.move()
 
     def player_moved(self, from_square: ChessSquare, to_square: ChessSquare):
+        '''potential player move
+        '''
         chess_piece = from_square.get_chess_piece()
         if not chess_piece.move(from_square, to_square):
             self.reset_selected_squares()
             return
 
         self.move_chess_piece(from_square, to_square)
+        chess_piece.moved_from_starting_position()
+
+        if isinstance(chess_piece, Pawn):
+            self.check_for_pawn_promotion(to_square)
+
+    def check_for_pawn_promotion(self, square: ChessSquare):
+        row, _ = square.get_position()
+
+        if row == TOP_OF_BOARD or row == BOTTOM_OF_BOARD:
+            chess_piece = square.get_chess_piece()
+            piece_starting_side = chess_piece.team.get_starting_side()
+
+            QUEEN_ME = False
+            if piece_starting_side == TOP_OF_BOARD:
+                if row == BOTTOM_OF_BOARD:
+                    QUEEN_ME = True
+            if piece_starting_side == BOTTOM_OF_BOARD:
+                if row == TOP_OF_BOARD:
+                    QUEEN_ME = True
+
+            # TODO maybe make dialog to check what piece they want
+            #     for now always make queen
+
+            if QUEEN_ME:
+                square.set_chess_piece(
+                    Queen(chess_piece.team)
+                )
 
     def move_chess_piece(self, from_square: ChessSquare, to_square: ChessSquare):
         lay = self.get_board()
