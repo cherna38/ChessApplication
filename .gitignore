@@ -2,3 +2,4 @@
 chessVEnv/
 includes/
 pyside-setup/
+__pycache__/
